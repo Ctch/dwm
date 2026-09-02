@@ -1,1 +1,3 @@
-dwm.c.orig
+config.h
+*.orig
+*.rej
