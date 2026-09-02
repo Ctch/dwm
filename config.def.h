@@ -13,11 +13,11 @@ static const char col_gray1[]       = "#0a0a0a";
 static const char col_gray2[]       = "#555555";
 static const char col_gray3[]       = "#e8e8e8";
 static const char col_gray4[]       = "#f0f0f0";
-static const char col_cyan[]        = "#6AB3AD";
+static const char col_cyan[]        = "#76c7c0";
 static const char *colors[][3]      = {
 	/*               fg         bg         border   */
 	[SchemeNorm] = { col_gray3, col_gray1, col_gray2 },
-	[SchemeSel]  = { col_gray4, col_cyan,  col_cyan  },
+	[SchemeSel]  = { col_gray1, col_cyan,  col_cyan  },
 };
 
 /* tagging */
@@ -34,7 +34,7 @@ static const Rule rules[] = {
 };
 
 /* layout(s) */
-static const float mfact     = 0.55; /* factor of master area size [0.05..0.95] */
+static const float mfact     = 0.6; /* factor of master area size [0.05..0.95] */
 static const int nmaster     = 1;    /* number of clients in master area */
 static const int resizehints = 1;    /* 1 means respect size hints in tiled resizals */
 static const int lockfullscreen = 1; /* 1 will force focus on the fullscreen window */
