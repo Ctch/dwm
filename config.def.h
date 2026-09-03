@@ -6,18 +6,18 @@ static const unsigned int snap      = 32;       /* snap pixel */
 static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
 static const char *fonts[]          = { "monospace:size=14" };
-static const char dmenufont[]       = "monospace:size=16";
+static const char dmenufont[]       = "monospace:size=18";
 static unsigned int baralpha        = 0xd0;
 static unsigned int borderalpha     = OPAQUE;
 static const char col_gray1[]       = "#0a0a0a";
 static const char col_gray2[]       = "#555555";
 static const char col_gray3[]       = "#e8e8e8";
-static const char col_gray4[]       = "#f0f0f0";
+static const char col_gray4[]       = "#0a0a0a";
 static const char col_cyan[]        = "#76c7c0";
 static const char *colors[][3]      = {
 	/*               fg         bg         border   */
 	[SchemeNorm] = { col_gray3, col_gray1, col_gray2 },
-	[SchemeSel]  = { col_gray1, col_cyan,  col_cyan  },
+	[SchemeSel]  = { col_gray4, col_cyan,  col_cyan  },
 };
 
 /* tagging */
