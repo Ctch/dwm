@@ -92,6 +92,8 @@ struct Client {
 	int x, y, w, h;
 	int oldx, oldy, oldw, oldh;
 	int basew, baseh, incw, inch, maxw, maxh, minw, minh, hintsvalid;
+	int sizehints_flags; /* USPosition | PPosition */
+	int reqx, reqy;     /* requested coordinates from WM_NORMAL_HINTS */
 	int bw, oldbw;
 	unsigned int tags;
 	int isfixed, isfloating, isurgent, neverfocus, oldstate, isfullscreen;
@@ -1076,6 +1078,7 @@ manage(Window w, XWindowAttributes *wa)
 	Client *c, *t = NULL;
 	Window trans = None;
 	XWindowChanges wc;
+	int orig_x, orig_y;
 
 	c = ecalloc(1, sizeof(Client));
 	c->win = w;
@@ -1094,7 +1097,25 @@ manage(Window w, XWindowAttributes *wa)
 		c->mon = selmon;
 		applyrules(c);
 	}
+	orig_x = c->x;
+	orig_y = c->y;
 
+	/* fetch size hints early to check position requests */
+	updatesizehints(c);
+
+	/* placement priority: rules > WM_NORMAL_HINTS > center */
+	if (c->x == orig_x && c->y == orig_y) { /* no rule set position */
+		if (c->sizehints_flags & (USPosition | PPosition)) {
+			c->x = c->reqx;
+			c->y = c->reqy;
+		} else {
+			c->x = c->mon->mx + (c->mon->mw - WIDTH(c)) / 2;
+			c->y = c->mon->my + (c->mon->mh - HEIGHT(c)) / 2;
+		}
+	}
+	/* else rule already set c->x,c->y – keep them */
+
+	/* keep window inside monitor workspace */
 	if (c->x + WIDTH(c) > c->mon->wx + c->mon->ww)
 		c->x = c->mon->wx + c->mon->ww - WIDTH(c);
 	if (c->y + HEIGHT(c) > c->mon->wy + c->mon->wh)
@@ -1116,10 +1137,7 @@ manage(Window w, XWindowAttributes *wa)
 	XSetWindowBorder(dpy, w, scheme[SchemeNorm][ColBorder].pixel);
 	configure(c); /* propagates border_width, if size doesn't change */
 	updatewindowtype(c);
-	updatesizehints(c);
 	updatewmhints(c);
-	c->x = c->mon->mx + (c->mon->mw - WIDTH(c)) / 2;
-	c->y = c->mon->my + (c->mon->mh - HEIGHT(c)) / 2;
 	XSelectInput(dpy, w, EnterWindowMask|FocusChangeMask|PropertyChangeMask|StructureNotifyMask);
 	grabbuttons(c, 0);
 	if (!c->isfloating)
@@ -2153,6 +2171,15 @@ updatesizehints(Client *c)
 	if (!XGetWMNormalHints(dpy, c->win, &size, &msize))
 		/* size is uninitialized, ensure that size.flags aren't used */
 		size.flags = PSize;
+
+	if (size.flags & (USPosition | PPosition)) {
+		c->reqx = size.x;
+		c->reqy = size.y;
+	} else {
+		c->reqx = c->reqy = 0;
+	}
+	c->sizehints_flags = size.flags & (USPosition | PPosition);
+
 	if (size.flags & PBaseSize) {
 		c->basew = size.base_width;
 		c->baseh = size.base_height;
