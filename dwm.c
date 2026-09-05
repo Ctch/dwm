@@ -1977,6 +1977,7 @@ unmanage(Client *c, int destroyed)
 	Monitor *m = c->mon;
 	XWindowChanges wc;
 	int was_focused_master = (m->sel == c && nexttiled(m->clients) == c);
+	Client *newmaster;
 
 	detach(c);
 	detachstack(c);
@@ -1996,11 +1997,8 @@ unmanage(Client *c, int destroyed)
 	focus(NULL);
 	updateclientlist();
 	arrange(m);
-	if (was_focused_master) {
-		Client *newmaster = nexttiled(m->clients);
-		if (newmaster && ISVISIBLE(newmaster))
-			focus(newmaster);
-	}
+	if (was_focused_master && (newmaster = nexttiled(m->clients)) && ISVISIBLE(newmaster))
+		focus(newmaster);
 }
 
 void
