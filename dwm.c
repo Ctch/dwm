@@ -1474,7 +1474,7 @@ restoreall(const Arg *arg)
 	Client *c;
 	for (c = selmon->clients; c; c = c->next)
 		if (!c->tags)
-			c->tags = selmon->tagset[selmon->seltags];
+			c->tags = selmon->tagset[selmon->seltags] & TAGMASK;
 	arrange(selmon);
 }
 
