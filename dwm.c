@@ -1471,11 +1471,16 @@ restack(Monitor *m)
 void
 restoreall(const Arg *arg)
 {
-	Client *c;
+	Client *c, *f = NULL;
 	for (c = selmon->clients; c; c = c->next)
-		if (!c->tags)
+		if (!c->tags) {
+			if (!f)
+				f = c;
 			c->tags = selmon->tagset[selmon->seltags] & TAGMASK;
+		}
 	arrange(selmon);
+	if (f)
+		focus(f);
 }
 
 void
