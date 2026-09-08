@@ -1903,16 +1903,20 @@ togglebar(const Arg *arg)
 void
 togglefloating(const Arg *arg)
 {
+	int x, y, w, h;
+
 	if (!selmon->sel)
 		return;
 	if (selmon->sel->isfullscreen) /* no support for fullscreen windows */
 		return;
 	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
-	if (selmon->sel->isfloating)
-		resize(selmon->sel, selmon->sel->x, selmon->sel->y,
-			selmon->sel->w, selmon->sel->h, 0);
-	selmon->sel->x = selmon->sel->mon->mx + (selmon->sel->mon->mw - WIDTH(selmon->sel)) / 2;
-	selmon->sel->y = selmon->sel->mon->my + (selmon->sel->mon->mh - HEIGHT(selmon->sel)) / 2;
+	if (selmon->sel->isfloating) {
+		h = selmon->sel->mon->mh * 4/5;
+		w = MIN(h * 4/3, selmon->sel->mon->mw * 4/5);
+		x = selmon->sel->mon->mx + (selmon->sel->mon->mw - w) / 2;
+		y = selmon->sel->mon->my + (selmon->sel->mon->mh - h) / 2;
+		resize(selmon->sel, x, y, w, h, 0);
+	}
 	arrange(selmon);
 }
 
