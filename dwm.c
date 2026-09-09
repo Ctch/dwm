@@ -1916,11 +1916,15 @@ togglefloating(const Arg *arg)
 		return;
 	selmon->sel->isfloating = !selmon->sel->isfloating || selmon->sel->isfixed;
 	if (selmon->sel->isfloating) {
-		h = selmon->sel->mon->mh * 4/5;
-		w = MIN(h * 4/3, selmon->sel->mon->mw * 4/5);
-		x = selmon->sel->mon->mx + (selmon->sel->mon->mw - w) / 2;
-		y = selmon->sel->mon->my + (selmon->sel->mon->mh - h) / 2;
-		resize(selmon->sel, x, y, w, h, 0);
+		if (arg && arg->i) {
+			h = selmon->sel->mon->mh * 4/5;
+			w = MIN(h * 4/3, selmon->sel->mon->mw * 4/5);
+			x = selmon->sel->mon->mx + (selmon->sel->mon->mw - w) / 2;
+			y = selmon->sel->mon->my + (selmon->sel->mon->mh - h) / 2;
+			resize(selmon->sel, x, y, w, h, 0);
+		} else
+			resize(selmon->sel, selmon->sel->x, selmon->sel->y,
+				selmon->sel->w, selmon->sel->h, 0);
 	}
 	arrange(selmon);
 }
