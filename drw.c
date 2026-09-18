@@ -178,7 +178,16 @@ drw_clr_create(Drw *drw, Clr *dest, const char *clrname, unsigned int alpha)
 	if (!XftColorAllocName(drw->dpy, drw->visual, drw->cmap,
 	                       clrname, dest))
 		die("error, cannot allocate color '%s'", clrname);
-	dest->pixel = (dest->pixel & 0x00ffffffU) | (alpha << 24);
+
+	unsigned int r = (dest->pixel >> 16) & 0xff;
+	unsigned int g = (dest->pixel >> 8) & 0xff;
+	unsigned int b = dest->pixel & 0xff;
+
+	r = (r * alpha) / 255;
+	g = (g * alpha) / 255;
+	b = (b * alpha) / 255;
+
+	dest->pixel = (alpha << 24) | (r << 16) | (g << 8) | b;
 }
 
 /* Create color schemes. */
