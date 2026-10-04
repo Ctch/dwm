@@ -181,7 +181,6 @@ static long getstate(Window w);
 static int gettextprop(Window w, Atom atom, char *text, unsigned int size);
 static void grabbuttons(Client *c, int focused);
 static void grabkeys(void);
-static void hidewin(const Arg *arg);
 static void incnmaster(const Arg *arg);
 static void keypress(XEvent *e);
 static void killclient(const Arg *arg);
@@ -200,7 +199,6 @@ static void resize(Client *c, int x, int y, int w, int h, int interact);
 static void resizeclient(Client *c, int x, int y, int w, int h);
 static void resizemouse(const Arg *arg);
 static void restack(Monitor *m);
-static void restoreall(const Arg *arg);
 static void run(void);
 static void runautostart(void);
 static void scan(void);
@@ -1024,23 +1022,6 @@ grabkeys(void)
 }
 
 void
-hidewin(const Arg *arg)
-{
-	Client *c;
-	int was_focused_master;
-	Client *newmaster;
-
-	if (!(c = selmon->sel))
-		return;
-	was_focused_master = (selmon->sel == c && nexttiled(selmon->clients) == c);
-	c->tags = 0;
-	focus(NULL);
-	arrange(selmon);
-	if (was_focused_master && (newmaster = nexttiled(selmon->clients)) && ISVISIBLE(newmaster))
-		focus(newmaster);
-}
-
-void
 incnmaster(const Arg *arg)
 {
 	selmon->nmaster = selmon->pertag->nmasters[selmon->pertag->curtag] = MAX(selmon->nmaster + arg->i, 0);
@@ -1466,21 +1447,6 @@ restack(Monitor *m)
 	}
 	XSync(dpy, False);
 	while (XCheckMaskEvent(dpy, EnterWindowMask, &ev));
-}
-
-void
-restoreall(const Arg *arg)
-{
-	Client *c, *f = NULL;
-	for (c = selmon->clients; c; c = c->next)
-		if (!c->tags) {
-			if (!f)
-				f = c;
-			c->tags = selmon->tagset[selmon->seltags] & TAGMASK;
-		}
-	arrange(selmon);
-	if (f)
-		focus(f);
 }
 
 void
