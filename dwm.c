@@ -182,6 +182,7 @@ static long getstate(Window w);
 static int gettextprop(Window w, Atom atom, char *text, unsigned int size);
 static void grabbuttons(Client *c, int focused);
 static void grabkeys(void);
+static int isfocusedmaster(Client *c);
 static void incnmaster(const Arg *arg);
 static void keypress(XEvent *e);
 static void killclient(const Arg *arg);
@@ -196,6 +197,7 @@ static void pop(Client *c);
 static void propertynotify(XEvent *e);
 static void quit(const Arg *arg);
 static Monitor *recttomon(int x, int y, int w, int h);
+static void refocusmaster(Monitor *m);
 static void resize(Client *c, int x, int y, int w, int h, int interact);
 static void resizeclient(Client *c, int x, int y, int w, int h);
 static void resizemouse(const Arg *arg);
@@ -219,6 +221,7 @@ static void tagmon(const Arg *arg);
 static void tile(Monitor *m);
 static void togglebar(const Arg *arg);
 static void togglefloating(const Arg *arg);
+static void togglehide(const Arg *arg);
 static void toggletag(const Arg *arg);
 static void toggleview(const Arg *arg);
 static void unfocus(Client *c, int setfocus);
@@ -284,6 +287,7 @@ static int useargb = 0;
 static Visual *visual;
 static int depth;
 static Colormap cmap;
+static Client* hiddenclient = NULL;
 
 /* configuration, allows nested code to access above variables */
 #include "config.h"
@@ -1019,6 +1023,14 @@ grabkeys(void)
 	}
 }
 
+static int
+isfocusedmaster(Client *c)
+{
+	Monitor *m = c->mon;
+
+	return m && m->sel == c && c == nexttiled(m->clients);
+}
+
 void
 incnmaster(const Arg *arg)
 {
@@ -1333,6 +1345,17 @@ recttomon(int x, int y, int w, int h)
 			r = m;
 		}
 	return r;
+}
+
+static void
+refocusmaster(Monitor *m)
+{
+	Client *c = nexttiled(m->clients);
+
+	if (c && ISVISIBLE(c))
+		focus(c);
+	else
+		focus(NULL);
 }
 
 void
@@ -1887,6 +1910,32 @@ togglefloating(const Arg *arg)
 	arrange(selmon);
 }
 
+static void
+togglehide(const Arg *arg)
+{
+    Client *c;
+	int wasfocusedmaster;
+
+	if (hiddenclient) {
+		c = hiddenclient;
+		hiddenclient = NULL;
+		c->tags = c->mon->tagset[c->mon->seltags];
+		arrange(c->mon);
+		focus(c);
+	} else {
+		if (!(c = selmon->sel))
+			return;
+		wasfocusedmaster = isfocusedmaster(c);
+		hiddenclient = c;
+		c->tags = 0;
+		if (wasfocusedmaster)
+			refocusmaster(c->mon);
+		else
+			focus(NULL);
+		arrange(selmon);
+	}
+}
+
 void
 toggletag(const Arg *arg)
 {
@@ -1956,8 +2005,7 @@ unmanage(Client *c, int destroyed)
 {
 	Monitor *m = c->mon;
 	XWindowChanges wc;
-	int was_focused_master = (m->sel == c && nexttiled(m->clients) == c);
-	Client *newmaster;
+	int wasfocusedmaster = isfocusedmaster(c);
 
 	detach(c);
 	detachstack(c);
@@ -1974,11 +2022,12 @@ unmanage(Client *c, int destroyed)
 		XUngrabServer(dpy);
 	}
 	free(c);
-	focus(NULL);
+	if (wasfocusedmaster)
+		refocusmaster(m);
+	else
+		focus(NULL);
 	updateclientlist();
 	arrange(m);
-	if (was_focused_master && (newmaster = nexttiled(m->clients)) && ISVISIBLE(newmaster))
-		focus(newmaster);
 }
 
 void
