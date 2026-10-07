@@ -41,6 +41,7 @@
 #include <X11/extensions/Xinerama.h>
 #endif /* XINERAMA */
 #include <X11/Xft/Xft.h>
+#include <X11/Xcursor/Xcursor.h>
 
 #include "drw.h"
 #include "util.h"
@@ -1717,9 +1718,12 @@ setup(void)
 	netatom[NetWMWindowTypeDialog] = XInternAtom(dpy, "_NET_WM_WINDOW_TYPE_DIALOG", False);
 	netatom[NetClientList] = XInternAtom(dpy, "_NET_CLIENT_LIST", False);
 	/* init cursors */
-	cursor[CurNormal] = drw_cur_create(drw, XC_left_ptr);
-	cursor[CurResize] = drw_cur_create(drw, XC_sizing);
-	cursor[CurMove] = drw_cur_create(drw, XC_fleur);
+	cursor[CurNormal] = ecalloc(1, sizeof(Cur));
+	cursor[CurNormal]->cursor = XcursorLibraryLoadCursor(dpy, "left_ptr");
+	cursor[CurResize] = ecalloc(1, sizeof(Cur));
+	cursor[CurResize]->cursor = XcursorLibraryLoadCursor(dpy, "bottom_right_corner");
+	cursor[CurMove] = ecalloc(1, sizeof(Cur));
+	cursor[CurMove]->cursor = XcursorLibraryLoadCursor(dpy, "fleur");
 	/* init appearance */
 	scheme = ecalloc(LENGTH(colors), sizeof(Clr *));
 	unsigned int alphas[] = {borderalpha, baralpha, OPAQUE};
